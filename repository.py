@@ -1,4 +1,5 @@
 import requests
+import re
 
 class Repository:
     """"Models metadata for a single git repo"""
@@ -8,7 +9,7 @@ class Repository:
         self.api_base_url = 'https://api.github.com/repos'
         self.raw_content_url = 'https://raw.githubusercontent.com' 
         self.base_images = []
-
+        self.dockerfile_paths = []
 
     def build_tree_url(self):
         """builds url that links to the recursive tree of a git repo"""
@@ -26,15 +27,20 @@ class Repository:
         json = request.json()
         tree = json['tree']
         for obj in tree:
-            if 'Dockerfile' in obj['path']:
+            if re.search(r"(.)Dockerfile$", obj['path']):
                 dockerfile_paths.append(obj['path'])
 
         return dockerfile_paths
 
-    def get_dockerfile(self, dockerfile_paths):
+    def get_base_image(self, dockerfile_paths):
+        """Parses Dockerfile and returns the name of the base images it uses. It's gross and needs to be refactored I know"""
+        # problem is it returns the "as" portion and it doesn't find multiple FROM statements
         for path in dockerfile_paths:
             raw_dockerfile = requests.get(f'{self.raw_content_url}/{self.project}/{self.repo}/{self.commit_sha}/{path}')
             raw_dockerfile_split = raw_dockerfile.text.split('\n')
-            base_image = raw_dockerfile_split[0].replace('FROM', '')
-            self.base_images.append(base_image)
+            for line in raw_dockerfile_split:
+                if re.search(r"(\A)FROM", line):
+                    split_line = line.split(' ')
+                    base_image = split_line[1]
+                    self.base_images.append(base_image)
         return self.base_images
