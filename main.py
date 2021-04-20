@@ -10,50 +10,11 @@
 
 import requests
 import json
+from repository import Repository
 
 def get_sources():
     sources = requests.get('https://gist.githubusercontent.com/jmelis/c60e61a893248244dc4fa12b946585c4/raw/25d39f67f2405330a6314cad64fac423a171162c/sources.txt')
     return sources.text.split('\n')
-
-source_dict = {}
-def build_dict(sources_list):
-    for source in sources_list:
-        if source:
-            key_value = source.split(' ')
-            source_dict[key_value[0]] = key_value[1]
-    return source_dict
-
-def extract_url_data(source_dict):
-    urls = []
-    for source, sha in source_dict.items(): 
-        repo_url = source.split('/')
-        commit_sha = sha
-
-        api_base_url = 'https://api.github.com/repos'
-        project = repo_url[3]
-        repo = repo_url[4][:-4]
-
-        urls.append(f'{api_base_url}/{project}/{repo}/git/trees/{commit_sha}?recursive=true')
-    return urls
-
-def get_trees(urls):
-    trees = []
-    for url in urls:
-        trees.append(requests.get(f'{url}').json())
-    with open('trees.json', 'w') as outfile:
-        json.dump(trees, outfile)
-    return trees
-
-def get_paths(trees):
-    paths = []
-    for tree in trees:
-        print(tree)
-    return(paths)
-
-def get_base_image(url):
-    raw = requests.get(url)
-    base_image = raw.text.split('\n')
-    base_image = base_image[0].replace('FROM', '')
 
 # steps:
 # retrieve sources
@@ -64,12 +25,19 @@ def get_base_image(url):
 # get base image
 # write report 
 
-sources_list = get_sources()
+qontract_repo = Repository('https://github.com/app-sre/qontract-reconcile.git', '30af65af14a2dce962df923446afff24dd8f123e')
+url = qontract_repo.build_tree_url()
+q_dockerfile_paths = qontract_repo.get_dockerfile_paths(url)
+print(q_dockerfile_paths)
 
-sources_dict = build_dict(sources_list)
+container_images_repo = Repository('https://github.com/app-sre/container-images.git', 'c260deaf135fc0efaab365ea234a5b86b3ead404')
+url = container_images_repo.build_tree_url()
+ci_dockerfile_paths = container_images_repo.get_dockerfile_paths(url)
+print(ci_dockerfile_paths)
 
-urls = extract_url_data(sources_dict)
+q_dockerfile_base_image = qontract_repo.get_dockerfile(q_dockerfile_paths)
+print(q_dockerfile_base_image)
 
-trees = get_trees(urls)
+ci_dockerfile_base_image = container_images_repo.get_dockerfile(ci_dockerfile_paths)
+print(ci_dockerfile_base_image)
 
-paths = get_paths(trees)
