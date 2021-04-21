@@ -5,7 +5,6 @@
 # unit testing
 
 import requests
-import json
 from repository import Repository
 from report import Report
 
@@ -30,10 +29,10 @@ print(q_dockerfile_base_image)
 ci_dockerfile_base_image = container_images_repo.get_base_image(ci_dockerfile_paths)
 print(ci_dockerfile_base_image)
 
-qontract_report = Report(qontract_repo.repo_url, qontract_repo.commit_sha, q_dockerfile_paths, qontract_repo.base_images) 
+qontract_report = Report(qontract_repo.repo_url, qontract_repo.commit_sha, q_dockerfile_paths, qontract_repo.base_images)
 data = qontract_report.build_report()
 qontract_report.write_report(data)
 
-ci_report = Report(container_images_repo.repo_url, container_images_repo.commit_sha, ci_dockerfile_paths, container_images_repo.base_images) 
+ci_report = Report(container_images_repo.repo_url, container_images_repo.commit_sha, ci_dockerfile_paths, container_images_repo.base_images)
 ci_data = ci_report.build_report()
 ci_report.write_report(ci_data)

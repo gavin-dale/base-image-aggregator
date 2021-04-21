@@ -1,5 +1,5 @@
-import requests
 import re
+import requests
 
 class Repository:
     """"Models metadata for a single git repo"""
@@ -7,9 +7,12 @@ class Repository:
         self.repo_url = repo_url
         self.commit_sha = commit_sha
         self.api_base_url = 'https://api.github.com/repos'
-        self.raw_content_url = 'https://raw.githubusercontent.com' 
+        self.raw_content_url = 'https://raw.githubusercontent.com'
         self.base_images = []
         self.dockerfile_paths = []
+        self.repo_details = ""
+        self.project = ""
+        self.repo = ""
 
     def build_tree_url(self):
         """builds url that links to the recursive tree of a git repo"""
@@ -21,7 +24,8 @@ class Repository:
         return tree_url
 
     def get_dockerfile_paths(self, url):
-        """requests git repo tree and parses out Dockerfile locations. Returns one or more Dockerfile paths"""
+        """requests git repo tree and parses out Dockerfile locations.
+        Returns one or more Dockerfile paths"""
         dockerfile_paths = []
         request = requests.get(f'{url}')
         json = request.json()
@@ -33,8 +37,8 @@ class Repository:
         return dockerfile_paths
 
     def get_base_image(self, dockerfile_paths):
-        """Parses Dockerfile and returns the name of the base images it uses. It's gross and needs to be refactored I know"""
-        # problem is it returns the "as" portion and it doesn't find multiple FROM statements
+        """Parses Dockerfile and returns the name of the base images it uses.
+        It's gross and needs to be refactored I know"""
         for path in dockerfile_paths:
             raw_dockerfile = requests.get(f'{self.raw_content_url}/{self.project}/{self.repo}/{self.commit_sha}/{path}')
             raw_dockerfile_split = raw_dockerfile.text.split('\n')
