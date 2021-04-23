@@ -10,15 +10,17 @@ class Report:
 
     def build_report(self):
         """Builds out the data structure of the report"""
-        report = {
-            "data": {
-                f"{self.base_url}:{self.commit_sha}": {
-                    f"{self.dockerfile_path}": [
-                        f"{self.base_image_name}"
-                    ]
+        report = [] 
+        for path in self.dockerfile_path:
+            report.append({
+                "data": {
+                    f"{self.base_url}:{self.commit_sha}": {
+                        f"{path}": [
+                            f"{self.base_image_name}"
+                        ]
+                    }
                 }
-            }
-        }
+            })
 
         return report
 
