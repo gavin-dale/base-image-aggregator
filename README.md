@@ -15,3 +15,8 @@ A report will be written to data.json. Each section will contain a link to the r
 
 ## Implementation Details
 There is two primary entities we're working with here, Repositorys and Reports. A repository is a model of a single git repository containing data like the repo URL, commit SHA, and Dockerfile location details. The Report object contains the details and implementation needed to format and write the data held in the Repository object. main.py pulls it all together by looping through all of the provided sources, then writing the report. 
+
+## Improvements
+There's a nested for loop in repository.py that will impact execution time at scale. There is several other for loops that may further impact execution time, but none so bad as the nested loop in repository.py.
+
+It still needs unit testing, error handling, and logging. 
